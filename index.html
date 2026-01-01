@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-Plane & Z-Plane System Visualizer (Precision Input)</title>
+    <style>
+    /* Reset & Base */
+    *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; background-color: #f9fafb; color: #111827; }
+    h1, h2, h3, h4 { font-weight: 700; margin: 0; }
+    p { margin: 0; }
+    button { cursor: pointer; background-color: transparent; font-family: inherit; }
+    button:disabled { cursor: not-allowed; opacity: 0.5; }
+    input { font-family: inherit; }
+    
+    /* Utility Classes */
+    .min-h-screen { min-height: 100vh; }
+    .max-w-7xl { max-width: 80rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+    .pb-12 { padding-bottom: 3rem; }
+    .flex { display: flex; }
+    .flex-col { display: flex; flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-6 { gap: 1.5rem; }
+    .gap-8 { gap: 2rem; }
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+    .grid { display: grid; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (min-width: 768px) { .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1024px) { 
+        .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        .lg\:col-span-1 { grid-column: span 1 / span 1; }
+    }
+    .bg-white { background-color: white; }
+    .bg-gray-50 { background-color: #f9fafb; }
+    .bg-gray-100 { background-color: #f3f4f6; }
+    .bg-gray-200 { background-color: #e5e7eb; }
+    .bg-gray-900 { background-color: #111827; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-200 { background-color: #bfdbfe; }
+    .bg-red-50 { background-color: #fef2f2; }
+    .bg-yellow-50 { background-color: #fefce8; }
+    .bg-indigo-50 { background-color: #eef2ff; }
+    .bg-green-50 { background-color: #f0fdf4; }
+    .bg-purple-600 { background-color: #9333ea; }
+    .text-white { color: white; }
+    .text-gray-900 { color: #111827; }
+    .text-gray-800 { color: #1f2937; }
+    .text-gray-700 { color: #374151; }
+    .text-gray-600 { color: #4b5563; }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-400 { color: #9ca3af; }
+    .text-blue-600 { color: #2563eb; }
+    .text-blue-700 { color: #1d4ed8; }
+    .text-blue-800 { color: #1e40af; }
+    .text-purple-700 { color: #7e22ce; }
+    .text-indigo-600 { color: #4f46e5; }
+    .text-red-600 { color: #dc2626; }
+    .border { border-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-gray-100 { border-color: #f3f4f6; }
+    .border-gray-200 { border-color: #e5e7eb; }
+    .border-gray-300 { border-color: #d1d5db; }
+    .border-red-200 { border-color: #fecaca; }
+    .border-blue-200 { border-color: #bfdbfe; }
+    .border-blue-500 { border-color: #3b82f6; }
+    .border-purple-500 { border-color: #a855f7; }
+    .border-green-200 { border-color: #bbf7d0; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-full { border-radius: 9999px; }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+    .w-full { width: 100%; }
+    .h-full { height: 100%; }
+    .w-4 { width: 1rem; }
+    .h-4 { height: 1rem; }
+    .w-8 { width: 2rem; }
+    .h-8 { height: 2rem; }
+    .h-2 { height: 0.5rem; }
+    .w-2 { width: 0.5rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .font-bold { font-weight: 700; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-mono { font-family: ui-monospace, monospace; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .cursor-move { cursor: move; }
+    .cursor-pointer { cursor: pointer; }
+    .overflow-x-auto { overflow-x: auto; }
+    .overflow-y-auto { overflow-y: auto; }
+    .max-h-32 { max-height: 8rem; }
+    .min-h-0 { min-height: 0; }
+    .flex-1 { flex: 1 1 0%; }
+    .pr-2 { padding-right: 0.5rem; }
+    .-mr-2 { margin-right: -0.5rem; }
+    .relative { position: relative; }
+    .select-none { user-select: none; }
+    .p-2 { padding: 0.5rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .p-6 { padding: 1.5rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mt-auto { margin-top: auto; }
+    .pt-4 { padding-top: 1rem; }
+    .accent-blue-600 { accent-color: #2563eb; }
+    .accent-purple-600 { accent-color: #9333ea; }
+    .appearance-none { -webkit-appearance: none; appearance: none; }
+    .group:hover .group-hover-stroke-red { stroke: #dc2626; }
+    .group:hover .group-hover-stroke-blue { stroke: #2563eb; }
+    #zplane-container { width: 100%; max-width: 500px; margin: 0 auto; }
+    #zplane-svg { display: block; margin: 0 auto; width: 100%; height: auto; }
+    
+    /* Input Styling */
+    .num-input {
+        width: 4rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #d1d5db;
+        text-align: right;
+        font-family: ui-monospace, monospace;
+    }
+    .num-input:focus {
+        outline: 2px solid #2563eb;
+        border-color: transparent;
+    }
+  </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+
+    <div id="gatekeeper" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,24,39,0.98); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; backdrop-filter: blur(5px);">
+        
+        <div style="background: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <span style="font-size: 30px; font-weight: bold; color: #7e22ce;">S/Z</span>
+        </div>
+
+        <h1 style="color: #fff; margin-bottom: 10px; font-size: 24px;">System Analysis Visualizer</h1>
+        <p style="color: #9ca3af; max-width: 400px; margin-bottom: 30px; font-size: 14px;">
+            S域与Z域系统分析交互工具。<br>
+            如您是校外学习者，请购买离线正式版。
+        </p>
+        
+        <div style="margin-bottom: 40px; padding: 25px; border: 1px solid #9333ea; border-radius: 12px; background: rgba(147, 51, 234, 0.1); width: 90%; max-width: 350px;">
+            <h3 style="margin-top: 0; color: #a855f7; font-size: 18px;">获取完整离线版 (Windows/Mac)</h3>
+            <ul style="text-align: left; font-size: 14px; color: #d1d5db; margin-bottom: 20px; line-height: 1.6;">
+                <li>✅ S域/Z域自由切换</li>
+                <li>✅ 零极点拖拽与频响分析</li>
+                <li>✅ 实时生成冲激响应 h(t)/h[n]</li>
+            </ul>
+            <a href="https://mianbaoduo.com/o/你的链接" target="_blank" style="display:block; background: #9333ea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                即将上线 (¥ ？)
+            </a>
+        </div>
+
+        <div style="border-top: 1px solid #374151; padding-top: 20px; width: 300px;">
+            <p style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">本校学生请输入课程口令：</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <input type="text" id="passInput" placeholder="输入口令" style="padding: 10px; border-radius: 6px; border: 1px solid #4b5563; background: #1f2937; color: white; outline: none; flex: 1;">
+                <button onclick="checkPass()" style="padding: 10px 20px; border-radius: 6px; background: #4b5563; color: white; font-weight: bold; transition: background 0.2s;">解锁</button>
+            </div>
+            <p id="errorMsg" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;">口令错误</p>
+        </div>
+    </div>
+
+    <script>
+        // === 配置区域 ===
+        // "tute2025EE2302_04" 的 Base64 编码
+        const ENCRYPTED_KEY = "dHV0ZTIwMjVFRTIzMDJfMDQ="; 
+        // ===============
+
+        function unlock() {
+            const gate = document.getElementById('gatekeeper');
+            gate.style.opacity = '0';
+            gate.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                gate.style.display = 'none';
+            }, 500); 
+            
+            // 存入缓存 (使用不同的key防止冲突)
+            localStorage.setItem('course_auth_sz_system', ENCRYPTED_KEY);
+        }
+
+        function checkPass() {
+            const input = document.getElementById('passInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            try {
+                if (btoa(input) === ENCRYPTED_KEY) {
+                    unlock();
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                errorMsg.style.display = 'block';
+                const inputEl = document.getElementById('passInput');
+                inputEl.style.borderColor = '#ef4444';
+                inputEl.animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 300 });
+            }
+        }
+
+        // 自动检测逻辑
+        (function initAuth() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlKey = urlParams.get('auth');
+            const cachedToken = localStorage.getItem('course_auth_sz_system');
+
+            if (urlKey && btoa(urlKey) === ENCRYPTED_KEY) {
+                unlock();
+                return;
+            }
+
+            if (cachedToken === ENCRYPTED_KEY) {
+                document.getElementById('gatekeeper').style.display = 'none';
+            }
+        })();
+    </script>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- ICONS ---
+        const PlusIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>;
+        const TrashIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>;
+
+        // --- CONSTANTS ---
+        const DomainType = {
+            Z: 'Z-Domain (Discrete)',
+            S: 'S-Domain (Continuous)'
+        };
+        const SVG_SIZE = 500;
+        const CENTER = SVG_SIZE / 2;
+        const Z_SCALE = 150; 
+        const S_SCALE = 3.5; 
+
+        // --- MATH UTILS ---
+        const screenToLogical = (x, y, scale) => ({ x: (x - CENTER) / scale, y: -(y - CENTER) / scale });
+        const logicalToScreen = (x, y, scale) => ({ x: CENTER + x * scale, y: CENTER - y * scale });
+        const getMagnitude = (p) => Math.sqrt(p.x * p.x + p.y * p.y);
+        const getAngle = (p) => Math.atan2(p.y, p.x);
+        const toComplex = (p) => ({ re: p.position.x, im: p.position.y });
+        
+        // Complex Ops
+        const cAdd = (a, b) => ({ re: a.re + b.re, im: a.im + b.im });
+        const cSub = (a, b) => ({ re: a.re - b.re, im: a.im - b.im });
+        const cMul = (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re });
+        const cDiv = (a, b) => {
+            const denom = b.re * b.re + b.im * b.im;
+            if (denom === 0) return { re: 0, im: 0 };
+            return { re: (a.re * b.re + a.im * b.im) / denom, im: (a.im * b.re - a.re * b.im) / denom };
+        };
+        const complexPow = (mag, angle, n) => {
+            if (mag === 0) return { re: 0, im: 0 };
+            const r = Math.pow(mag, n);
+            const theta = angle * n;
+            return { re: r * Math.cos(theta), im: r * Math.sin(theta) };
+        };
+        const complexExp = (real, imag, t) => {
+            const r = Math.exp(real * t);
+            return { re: r * Math.cos(imag * t), im: r * Math.sin(imag * t) };
+        };
+
+        // --- COMPONENTS ---
+        
+        const PoleZeroPlane = ({ domain, poles, zeros, onUpdatePoles, onUpdateZeros }) => {
+            const svgRef = useRef(null);
+            const [draggingItem, setDraggingItem] = useState(null);
+            const scale = domain === DomainType.Z ? Z_SCALE : S_SCALE;
+
+            const handleMouseDown = (id, type, e) => {
+                e.stopPropagation();
+                setDraggingItem({ id, type });
+            };
+
+            const handleMouseMove = (e) => {
+                if (!draggingItem || !svgRef.current) return;
+                const CTM = svgRef.current.getScreenCTM();
+                const x = (e.clientX - CTM.e) / CTM.a;
+                const y = (e.clientY - CTM.f) / CTM.d;
+                const logicalPos = screenToLogical(x, y, scale);
+                const newMag = getMagnitude(logicalPos);
+                const newAngle = getAngle(logicalPos);
+
+                if (draggingItem.type === 'pole') {
+                    const updated = poles.map(p => p.id === draggingItem.id ? { ...p, position: logicalPos, magnitude: newMag, angle: newAngle } : p);
+                    onUpdatePoles(updated);
+                } else {
+                    const updated = zeros.map(z => z.id === draggingItem.id ? { ...z, position: logicalPos, magnitude: newMag, angle: newAngle } : z);
+                    onUpdateZeros(updated);
+                }
+            };
+
+            const handleMouseUp = () => setDraggingItem(null);
+
+            return (
+                <div id="zplane-container" className="relative bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden cursor-crosshair">
+                <svg ref={svgRef} viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} className="block select-none" id="zplane-svg">
+                    <defs>
+                        <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
+                            <path d="M 25 0 L 0 0 0 25" fill="none" stroke="gray" strokeWidth="0.5" strokeOpacity="0.1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    
+                    {domain === DomainType.Z ? (
+                        <>
+                            <circle cx={CENTER} cy={CENTER} r={Z_SCALE} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="5,5" />
+                            <text x={CENTER + Z_SCALE + 5} y={CENTER + 20} className="text-xs fill-red-500 font-semibold">|z|=1</text>
+                            <text x={SVG_SIZE - 10} y={CENTER + 20} textAnchor="end" className="text-xs fill-gray-500 font-mono">Re(z)</text>
+                            <text x={CENTER + 10} y={20} className="text-xs fill-gray-500 font-mono">Im(z)</text>
+                        </>
+                    ) : (
+                        <>
+                            <line x1={CENTER} y1={0} x2={CENTER} y2={SVG_SIZE} stroke="#9333ea" strokeWidth="2" strokeDasharray="5,5" />
+                            <text x={CENTER + 10} y={SVG_SIZE - 10} className="text-xs fill-purple-600 font-semibold">jω Axis</text>
+                            <text x={SVG_SIZE - 10} y={CENTER + 20} textAnchor="end" className="text-xs fill-gray-500 font-mono">σ (Real)</text>
+                            <text x={CENTER + 10} y={20} className="text-xs fill-gray-500 font-mono">jω (Imag)</text>
+                            <rect x={0} y={0} width={CENTER} height={SVG_SIZE} fill="rgba(34, 197, 94, 0.05)" />
+                        </>
+                    )}
+
+                    <line x1={0} y1={CENTER} x2={SVG_SIZE} y2={CENTER} stroke="#9ca3af" strokeWidth="2" />
+                    <line x1={CENTER} y1={0} x2={CENTER} y2={SVG_SIZE} stroke="#9ca3af" strokeWidth="2" />
+
+                    {poles.map((pole) => {
+                        const pos = logicalToScreen(pole.position.x, pole.position.y, scale);
+                        const isDragging = draggingItem?.id === pole.id && draggingItem?.type === 'pole';
+                        return (
+                            <g key={pole.id} onMouseDown={(e) => handleMouseDown(pole.id, 'pole', e)} className="cursor-move group">
+                                <circle cx={pos.x} cy={pos.y} r={20} fill="transparent" />
+                                <line x1={pos.x - 6} y1={pos.y - 6} x2={pos.x + 6} y2={pos.y + 6} stroke={isDragging ? "#dc2626" : "#000"} strokeWidth={3} className="group-hover-stroke-red"/>
+                                <line x1={pos.x + 6} y1={pos.y - 6} x2={pos.x - 6} y2={pos.y + 6} stroke={isDragging ? "#dc2626" : "#000"} strokeWidth={3} className="group-hover-stroke-red"/>
+                            </g>
+                        );
+                    })}
+                    {zeros.map((zero) => {
+                        const pos = logicalToScreen(zero.position.x, zero.position.y, scale);
+                        const isDragging = draggingItem?.id === zero.id && draggingItem?.type === 'zero';
+                        return (
+                            <g key={zero.id} onMouseDown={(e) => handleMouseDown(zero.id, 'zero', e)} className="cursor-move group">
+                                <circle cx={pos.x} cy={pos.y} r={20} fill="transparent" />
+                                <circle cx={pos.x} cy={pos.y} r={6} fill="none" stroke={isDragging ? "#2563eb" : "#1d4ed8"} strokeWidth={3} className="group-hover-stroke-blue" />
+                            </g>
+                        );
+                    })}
+                </svg>
+                </div>
+            );
+        };
+
+        const TimeDomainPlot = ({ domain, poles, zeros }) => {
+            const WIDTH = 600; const HEIGHT = 200; const PADDING = 40; const X_AXIS_Y = HEIGHT / 2;
+
+            const timeData = useMemo(() => {
+                const points = [];
+                const p_complex = poles.map(p => toComplex(p));
+                const z_complex = zeros.map(z => toComplex(z));
+                while (z_complex.length < p_complex.length) z_complex.push({ re: 0, im: 0 });
+
+                if (domain === DomainType.Z) {
+                    for (let n = -2; n <= 30; n++) {
+                        let sumRe = 0;
+                        if (n >= 0) {
+                            p_complex.forEach((p_k, index) => {
+                                let numerator = { re: 1, im: 0 };
+                                z_complex.forEach(z_m => { numerator = cMul(numerator, cSub(p_k, z_m)); });
+                                let denominator = p_k;
+                                if (Math.abs(p_k.re) < 0.0001 && Math.abs(p_k.im) < 0.0001) denominator = {re: 1, im: 0};
+
+                                p_complex.forEach((other, otherIndex) => {
+                                    if (index !== otherIndex) denominator = cMul(denominator, cSub(p_k, other));
+                                });
+                                
+                                const residue = cDiv(numerator, denominator);
+                                const mag = Math.sqrt(p_k.re**2 + p_k.im**2);
+                                const ang = Math.atan2(p_k.im, p_k.re);
+                                const mode = complexPow(mag, ang, n);
+                                const term = cMul(residue, mode);
+                                sumRe += term.re;
+                            });
+                        }
+                        points.push({ t: n, val: sumRe });
+                    }
+                } else {
+                    for (let t = 0; t <= 10; t += 0.1) {
+                        let sumRe = 0;
+                        p_complex.forEach((p_k, index) => {
+                            let numerator = { re: 1, im: 0 };
+                            z_complex.forEach(z_m => { numerator = cMul(numerator, cSub(p_k, z_m)); });
+                            let denominator = { re: 1, im: 0 };
+                            p_complex.forEach((other, otherIndex) => {
+                                if (index !== otherIndex) denominator = cMul(denominator, cSub(p_k, other));
+                            });
+
+                            const residue = cDiv(numerator, denominator);
+                            const mode = complexExp(p_k.re, p_k.im, t);
+                            const term = cMul(residue, mode);
+                            sumRe += term.re;
+                        });
+                        points.push({ t: t, val: sumRe });
+                    }
+                }
+                return points;
+            }, [domain, poles, zeros]);
+
+            const maxAbsVal = Math.max(...timeData.map(d => Math.abs(d.val)), 0.001);
+            const plotScaleY = (HEIGHT / 2 - PADDING) / (Math.min(maxAbsVal, 50));
+            const tMin = timeData[0]?.t || 0; 
+            const tMax = timeData[timeData.length - 1]?.t || 1;
+            const plotScaleX = (WIDTH - PADDING * 2) / (tMax - tMin);
+            
+            const getX = (t) => PADDING + (t - tMin) * plotScaleX;
+            const getY = (val) => {
+                let clampedVal = val; if (val > 50) clampedVal = 50; if (val < -50) clampedVal = -50;
+                return X_AXIS_Y - clampedVal * plotScaleY;
+            };
+
+            const renderPlot = () => {
+                if (domain === DomainType.Z) {
+                    return timeData.map((pt) => {
+                        const x = getX(pt.t); const y = getY(pt.val);
+                        return (
+                            <g key={pt.t} className="group">
+                                <line x1={x} y1={X_AXIS_Y} x2={x} y2={y} stroke="#4f46e5" strokeWidth={2} />
+                                <circle cx={x} cy={y} r={3} fill="#4f46e5" />
+                            </g>
+                        );
+                    });
+                } else {
+                    const pathD = timeData.map((pt, i) => `${i===0?'M':'L'} ${getX(pt.t)} ${getY(pt.val)}`).join(' ');
+                    return <path d={pathD} fill="none" stroke="#9333ea" strokeWidth={2} />;
+                }
+            };
+
+            return (
+                <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-200 mt-6">
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-bold text-gray-800">
+                        {domain === DomainType.Z ? 'Impulse Response h[n]' : 'Impulse Response h(t)'}
+                    </h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <svg width={WIDTH} height={HEIGHT} className="mx-auto select-none" style={{maxWidth: '100%', height: 'auto'}}>
+                    <rect x={PADDING} y={PADDING} width={WIDTH - PADDING*2} height={HEIGHT - PADDING*2} fill="#f9fafb" />
+                    <line x1={PADDING} y1={X_AXIS_Y} x2={WIDTH - PADDING} y2={X_AXIS_Y} stroke="#9ca3af" strokeWidth={2} />
+                    <line x1={getX(0)} y1={PADDING} x2={getX(0)} y2={HEIGHT - PADDING} stroke="#e5e7eb" strokeWidth={2} strokeDasharray="4,4" />
+                    {renderPlot()}
+                    </svg>
+                </div>
+                </div>
+            );
+        };
+
+        const FreqResponsePlot = ({ domain, poles, zeros }) => {
+            const WIDTH = 600; const HEIGHT = 200; const PADDING = 40;
+            
+            const dataPoints = useMemo(() => {
+                const points = [];
+                const numSteps = 300;
+                
+                if (domain === DomainType.Z) {
+                    for (let i = 0; i <= numSteps; i++) {
+                        const w = -Math.PI + (i / numSteps) * 2 * Math.PI; 
+                        const z_re = Math.cos(w);
+                        const z_im = Math.sin(w);
+                        
+                        let num = 1; zeros.forEach(z => { const dx=z_re-z.position.x; const dy=z_im-z.position.y; num *= Math.sqrt(dx*dx + dy*dy); });
+                        let den = 1; poles.forEach(p => { const dx=z_re-p.position.x; const dy=z_im-p.position.y; den *= Math.max(Math.sqrt(dx*dx + dy*dy), 0.01); });
+                        
+                        let val = (poles.length===0 && zeros.length===0) ? 1 : num/den;
+                        points.push({ w, val });
+                    }
+                } else {
+                    const range = 70;
+                    for (let i = 0; i <= numSteps; i++) {
+                        const w = -range + (i / numSteps) * 2 * range;
+                        const s_re = 0;
+                        const s_im = w;
+
+                        let num = 1; zeros.forEach(z => { const dx=s_re-z.position.x; const dy=s_im-z.position.y; num *= Math.sqrt(dx*dx + dy*dy); });
+                        let den = 1; poles.forEach(p => { const dx=s_re-p.position.x; const dy=s_im-p.position.y; den *= Math.max(Math.sqrt(dx*dx + dy*dy), 0.01); });
+
+                        let val = (poles.length===0 && zeros.length===0) ? 1 : num/den;
+                        points.push({ w, val });
+                    }
+                }
+                return points;
+            }, [domain, poles, zeros]);
+
+            const maxVal = Math.max(...dataPoints.map(d => d.val));
+            let yMax = maxVal > 0 ? maxVal * 1.2 : 1;
+            if (yMax < 1) yMax = 1;
+            
+            const plotScaleY = (HEIGHT - PADDING * 2) / yMax;
+            const xRange = domain === DomainType.Z ? Math.PI : 70;
+            const plotScaleX = (WIDTH - PADDING * 2) / (2 * xRange); 
+            
+            const getX = (w) => PADDING + (w + xRange) * plotScaleX;
+            const getY = (val) => (HEIGHT - PADDING) - val * plotScaleY;
+
+            const pathD = dataPoints.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${getX(pt.w)} ${getY(pt.val)}`).join(' ');
+            const primaryColor = domain === DomainType.Z ? "#db2777" : "#9333ea";
+
+            return (
+                <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-200 mt-6">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-lg font-bold text-gray-800">
+                            {domain === DomainType.Z ? 'Freq Response |H(e^jω)|' : 'Freq Response |H(jω)|'}
+                        </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <svg width={WIDTH} height={HEIGHT} className="mx-auto select-none" style={{maxWidth: '100%', height: 'auto'}}>
+                            <rect x={PADDING} y={PADDING} width={WIDTH - PADDING*2} height={HEIGHT - PADDING*2} fill="#f9fafb" />
+                            <line x1={PADDING} y1={HEIGHT - PADDING} x2={WIDTH - PADDING} y2={HEIGHT - PADDING} stroke="#9ca3af" strokeWidth={2} />
+                            <line x1={getX(0)} y1={PADDING} x2={getX(0)} y2={HEIGHT - PADDING} stroke="#e5e7eb" strokeWidth={2} strokeDasharray="4,4" />
+                            
+                            <text x={getX(-xRange)} y={HEIGHT - 10} textAnchor="middle" className="text-xs fill-gray-500 font-mono">
+                                {domain === DomainType.Z ? '-π' : '-70'}
+                            </text>
+                            <text x={getX(0)} y={HEIGHT - 10} textAnchor="middle" className="text-xs fill-gray-500 font-mono">0</text>
+                            <text x={getX(xRange)} y={HEIGHT - 10} textAnchor="middle" className="text-xs fill-gray-500 font-mono">
+                                {domain === DomainType.Z ? 'π' : '70'}
+                            </text>
+                            
+                            <path d={pathD} fill="none" stroke={primaryColor} strokeWidth={2} />
+                            <path d={`${pathD} L ${getX(xRange)} ${HEIGHT-PADDING} L ${getX(-xRange)} ${HEIGHT-PADDING} Z`} fill={primaryColor} fillOpacity="0.1" stroke="none" />
+                        </svg>
+                    </div>
+                </div>
+            );
+        };
+
+        const InfoPanel = ({ domain, poles, zeros }) => {
+            let isStable = false;
+            let stabilityReason = "";
+
+            if (poles.length === 0) {
+                stabilityReason = "No poles defined.";
+                isStable = true;
+            } else {
+                if (domain === DomainType.Z) {
+                    const maxMag = Math.max(...poles.map(p => p.magnitude));
+                    isStable = maxMag < 1;
+                    stabilityReason = isStable ? "Stable: All poles inside unit circle (|z| < 1)." : "Unstable: Pole outside or on unit circle.";
+                } else {
+                    const maxReal = Math.max(...poles.map(p => p.position.x));
+                    isStable = maxReal < 0;
+                    stabilityReason = isStable ? "Stable: All poles in LHP (Real < 0)." : "Unstable: Pole in RHP or on imaginary axis.";
+                }
+            }
+
+            return (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">System Analysis ({domain === DomainType.Z ? 'Discrete' : 'Continuous'})</h3>
+                    <div className="space-y-4">
+                        <div className={`p-4 rounded-lg border ${isStable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                            <p className="text-xs font-semibold uppercase tracking-wide flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full ${isStable ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                {isStable ? 'Stable System' : 'Unstable System'}
+                            </p>
+                            <p className="text-sm mt-1 text-gray-700">{stabilityReason}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Poles (X)</p>
+                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                    {poles.map((p, idx) => (
+                                        <div key={p.id} className="flex justify-between text-sm bg-gray-50 px-2 py-1 rounded">
+                                            <span>p{idx+1}</span>
+                                            <span className="font-mono text-xs">
+                                                {domain === DomainType.Z 
+                                                    ? `${p.magnitude.toFixed(2)}∠${(p.angle * (180/Math.PI)).toFixed(0)}°`
+                                                    : `${p.position.x.toFixed(3)} + j${p.position.y.toFixed(3)}`
+                                                }
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {poles.length === 0 && <span className="text-sm text-gray-400 italic">None</span>}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Zeros (O)</p>
+                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                    {zeros.map((z, idx) => (
+                                        <div key={z.id} className="flex justify-between text-sm bg-blue-50 px-2 py-1 rounded">
+                                            <span>z{idx+1}</span>
+                                            <span className="font-mono text-xs">
+                                                {domain === DomainType.Z 
+                                                    ? `${z.magnitude.toFixed(2)}∠${(z.angle * (180/Math.PI)).toFixed(0)}°`
+                                                    : `${z.position.x.toFixed(3)} + j${z.position.y.toFixed(3)}`
+                                                }
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {zeros.length === 0 && <span className="text-sm text-gray-400 italic">None</span>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ControlPanel = ({ domain, setDomain, poles, zeros, addPole, removeLastPole, addZero, removeLastZero, onUpdatePoles, onUpdateZeros, reset }) => {
+            const updateItem = (list, setList, index, updates) => {
+                const newList = [...list];
+                const item = newList[index];
+                
+                if (domain === DomainType.Z) {
+                    // Update Polar
+                    let mag = item.magnitude;
+                    let angle = item.angle;
+                    if (updates.mag !== undefined) mag = Math.max(0, parseFloat(updates.mag));
+                    if (updates.angleDeg !== undefined) angle = parseFloat(updates.angleDeg) * (Math.PI / 180);
+                    
+                    newList[index] = { ...item, magnitude: mag, angle: angle, position: { x: mag * Math.cos(angle), y: mag * Math.sin(angle) } };
+                } else {
+                    // Update Cartesian
+                    let x = item.position.x;
+                    let y = item.position.y;
+                    if (updates.x !== undefined) x = parseFloat(updates.x);
+                    if (updates.y !== undefined) y = parseFloat(updates.y);
+                    const mag = Math.sqrt(x*x + y*y);
+                    const ang = Math.atan2(y, x);
+                    newList[index] = { ...item, position: {x, y}, magnitude: mag, angle: ang };
+                }
+                setList(newList);
+            };
+
+            return (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-full flex flex-col">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">Configuration</h2>
+                    
+                    {/* Domain Switch */}
+                    <div className="mb-6 bg-gray-100 p-1 rounded-lg flex">
+                        <button onClick={() => setDomain(DomainType.Z)} className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${domain === DomainType.Z ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`}>Z-Domain</button>
+                        <button onClick={() => setDomain(DomainType.S)} className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${domain === DomainType.S ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'}`}>S-Domain</button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2 space-y-6 pb-4">
+                        {/* Poles */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">Poles (X)</label>
+                            </div>
+                            <div className="flex gap-2 mb-3">
+                                <button onClick={addPole} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm"><PlusIcon className="w-4 h-4" /> Add</button>
+                                <button onClick={removeLastPole} disabled={poles.length === 0} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 transition-colors text-sm"><TrashIcon className="w-4 h-4" /> Remove</button>
+                            </div>
+                            <div className="space-y-3">
+                                {poles.map((pole, idx) => (
+                                    <div key={pole.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+                                        <div className="font-semibold text-gray-500 mb-2">Pole {idx + 1}</div>
+                                        {domain === DomainType.Z ? (
+                                            <>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="w-8 font-medium text-gray-600">Mag</span>
+                                                <input type="range" min="0" max="2" step="0.01" value={pole.magnitude} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { mag: e.target.value })} className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                                <input type="number" min="0" max="10" step="0.01" value={pole.magnitude.toFixed(2)} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { mag: e.target.value })} className="num-input" />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 font-medium text-gray-600">Arg</span>
+                                                <input type="range" min="-180" max="180" step="1" value={pole.angle * (180/Math.PI)} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { angleDeg: e.target.value })} className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                                <input type="number" min="-360" max="360" step="1" value={(pole.angle * (180/Math.PI)).toFixed(0)} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { angleDeg: e.target.value })} className="num-input" />
+                                            </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="w-8 font-medium text-gray-600">Real</span>
+                                                <input type="range" min="-70" max="70" step="0.01" value={pole.position.x} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { x: e.target.value })} className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600" />
+                                                <input type="number" min="-100" max="100" step="0.01" value={pole.position.x.toFixed(3)} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { x: e.target.value })} className="num-input" />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 font-medium text-gray-600">Imag</span>
+                                                <input type="range" min="-70" max="70" step="0.01" value={pole.position.y} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { y: e.target.value })} className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600" />
+                                                <input type="number" min="-100" max="100" step="0.01" value={pole.position.y.toFixed(3)} onChange={(e) => updateItem(poles, onUpdatePoles, idx, { y: e.target.value })} className="num-input" />
+                                            </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Zeros */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">Zeros (O)</label>
+                            </div>
+                            <div className="flex gap-2 mb-3">
+                                <button onClick={addZero} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"><PlusIcon className="w-4 h-4" /> Add</button>
+                                <button onClick={removeLastZero} disabled={zeros.length === 0} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-50 transition-colors text-sm"><TrashIcon className="w-4 h-4" /> Remove</button>
+                            </div>
+                            <div className="space-y-3">
+                                {zeros.map((zero, idx) => (
+                                    <div key={zero.id} className="bg-blue-50 p-3 rounded-lg border border-blue-200 text-xs">
+                                        <div className="font-semibold text-blue-800 mb-2">Zero {idx + 1}</div>
+                                        {domain === DomainType.Z ? (
+                                            <>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="w-8 font-medium text-blue-700">Mag</span>
+                                                <input type="range" min="0" max="2" step="0.01" value={zero.magnitude} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { mag: e.target.value })} className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                                <input type="number" min="0" max="10" step="0.01" value={zero.magnitude.toFixed(2)} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { mag: e.target.value })} className="num-input" />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 font-medium text-blue-700">Arg</span>
+                                                <input type="range" min="-180" max="180" step="1" value={zero.angle * (180/Math.PI)} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { angleDeg: e.target.value })} className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                                <input type="number" min="-360" max="360" step="1" value={(zero.angle * (180/Math.PI)).toFixed(0)} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { angleDeg: e.target.value })} className="num-input" />
+                                            </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="w-8 font-medium text-blue-700">Real</span>
+                                                <input type="range" min="-70" max="70" step="0.01" value={zero.position.x} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { x: e.target.value })} className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                                <input type="number" min="-100" max="100" step="0.01" value={zero.position.x.toFixed(3)} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { x: e.target.value })} className="num-input" />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 font-medium text-blue-700">Imag</span>
+                                                <input type="range" min="-70" max="70" step="0.01" value={zero.position.y} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { y: e.target.value })} className="flex-1 h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                                <input type="number" min="-100" max="100" step="0.01" value={zero.position.y.toFixed(3)} onChange={(e) => updateItem(zeros, onUpdateZeros, idx, { y: e.target.value })} className="num-input" />
+                                            </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-3 flex-shrink-0">
+                        <button onClick={reset} className="w-full text-center text-sm text-gray-500 underline mb-4">Reset to Default</button>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN APP ---
+        const App = () => {
+            const initialState = {
+                domain: DomainType.Z,
+                poles: [{"id":"1","position":{"x":0.5,"y":0.5},"magnitude":0.7071,"angle":0.7853}],
+                zeros: []
+            };
+            const [domain, setDomain] = useState(initialState.domain);
+            const [poles, setPoles] = useState(initialState.poles);
+            const [zeros, setZeros] = useState(initialState.zeros);
+
+            const addPole = () => {
+                const offset = poles.length * 0.1;
+                const newPole = { id: Date.now().toString(), position: { x: 0.3 + offset, y: -0.3 - offset }, magnitude: Math.sqrt(Math.pow(0.3+offset, 2) + Math.pow(-0.3-offset, 2)), angle: Math.atan2(-0.3-offset, 0.3+offset) };
+                setPoles([...poles, newPole]);
+            };
+            const removeLastPole = () => setPoles(poles.slice(0, -1));
+            
+            const addZero = () => {
+                const offset = zeros.length * 0.1;
+                const newZero = { id: Date.now().toString() + "_z", position: { x: -0.3 - offset, y: 0.3 + offset }, magnitude: Math.sqrt(Math.pow(-0.3-offset, 2) + Math.pow(0.3+offset, 2)), angle: Math.atan2(0.3+offset, -0.3-offset) };
+                setZeros([...zeros, newZero]);
+            };
+            const removeLastZero = () => setZeros(zeros.slice(0, -1));
+
+            const reset = () => {
+                setDomain(initialState.domain);
+                setPoles(initialState.poles);
+                setZeros(initialState.zeros);
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+                        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold transition-colors ${domain === DomainType.Z ? 'bg-blue-600' : 'bg-purple-600'}`}>
+                                    {domain === DomainType.Z ? 'Z' : 'S'}
+                                </div>
+                                <h1 className="text-xl font-bold text-gray-900">System Analysis Visualizer</h1>
+                            </div>
+                        </div>
+                    </header>
+                    <main className="max-w-7xl mx-auto px-4 py-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 flex flex-col gap-6">
+                                <PoleZeroPlane domain={domain} poles={poles} zeros={zeros} onUpdatePoles={setPoles} onUpdateZeros={setZeros} />
+                                <FreqResponsePlot domain={domain} poles={poles} zeros={zeros} />
+                                <TimeDomainPlot domain={domain} poles={poles} zeros={zeros} />
+                                <InfoPanel domain={domain} poles={poles} zeros={zeros} />
+                            </div>
+                            <div className="lg:col-span-1 h-[800px] lg:h-auto lg:sticky lg:top-24">
+                                <ControlPanel 
+                                    domain={domain} setDomain={setDomain}
+                                    poles={poles} zeros={zeros} 
+                                    addPole={addPole} removeLastPole={removeLastPole} 
+                                    addZero={addZero} removeLastZero={removeLastZero} 
+                                    onUpdatePoles={setPoles} onUpdateZeros={setZeros}
+                                    reset={reset} 
+                                />
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
